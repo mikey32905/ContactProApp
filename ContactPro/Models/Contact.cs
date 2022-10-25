@@ -54,7 +54,7 @@ namespace ContactPro.Models
 
         [Required]
         [DataType(DataType.Date)]
-        public DateTime? Created { get; set; }
+        public DateTime Created { get; set; }
 
 
         //Image properties
@@ -62,7 +62,7 @@ namespace ContactPro.Models
         public string? ImageType { get; set; }
 
         [NotMapped]
-        public IFormFile ImageFile { get; set; }
+        public IFormFile? ImageFile { get; set; }
 
         //Virtuals
         public virtual AppUser? AppUser { get; set; }
