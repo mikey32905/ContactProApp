@@ -34,10 +34,69 @@ namespace ContactPro.Controllers
 
         // GET: Contacts
         [Authorize]
-        public async Task<IActionResult> Index()
+        public IActionResult Index(int categoryId)
         {
-            var applicationDbContext = _context.Contacts.Include(c => c.AppUser);
-            return View(await applicationDbContext.ToListAsync());
+            List<Contact> contacts = new List<Contact>();
+            string appUserId = _userManager.GetUserId(User);
+
+            //return userId and associated contacts and categories
+            AppUser appUser = _context.Users
+                                      .Include(c => c.Contacts)
+                                      .ThenInclude(c => c.Categories)
+                                      .FirstOrDefault(u => u.Id == appUserId);
+
+            var categories = appUser.Categories;
+
+            if (categoryId == 0)
+            {
+                contacts = appUser.Contacts.OrderBy(c => c.LastName)
+                                  .ThenBy(c => c.FirstName)
+                                  .ToList();
+            }
+            else
+            {
+                contacts = appUser.Categories.FirstOrDefault(c => c.Id == categoryId)
+                                    .Contacts.OrderBy(c => c.LastName)
+                                    .ThenBy(c => c.FirstName)
+                                    .ToList();
+            }
+
+            ViewData["CategoryId"] = new SelectList(categories, "Id", "Name", categoryId);
+
+            return View(contacts);
+        }
+
+        [Authorize]
+        public IActionResult SearchContacts(string searchString)
+        {
+            string appUserId = _userManager.GetUserId(User);
+            var contacts = new List<Contact>();
+
+            AppUser appUser = _context.Users
+                                      .Include(c => c.Contacts)
+                                      .ThenInclude(c => c.Categories)
+                                      .FirstOrDefault(u => u.Id == appUserId);
+
+            if (String.IsNullOrEmpty(searchString))
+            {
+                contacts = appUser.Contacts
+                                  .OrderBy(c => c.LastName)
+                                  .ThenBy(c => c.FirstName)
+                                  .ToList();
+            }
+            else
+            {
+                contacts = appUser.Contacts.Where(c => c.FullName!.ToLower().Contains(searchString.ToLower()))
+                                  .OrderBy(c => c.LastName)
+                                  .ThenBy(c => c.FirstName)
+                                  .ToList();
+
+            }
+
+            ViewData["CategoryId"] = new SelectList(appUser.Categories, "Id", "Name", 0);
+
+            return View(nameof(Index), contacts);
+            
         }
 
         // GET: Contacts/Details/5
@@ -68,8 +127,8 @@ namespace ContactPro.Controllers
         {
             string appUserId = _userManager.GetUserId(User);
             ViewData["StatesList"] = new SelectList(Enum.GetValues(typeof(States)).Cast<States>().ToList());
-            ViewData["CategoryList"] = new MultiSelectList(await _addressBookService.GetUserCategoriesAsync(appUserId),"Id","Name");
-           
+            ViewData["CategoryList"] = new MultiSelectList(await _addressBookService.GetUserCategoriesAsync(appUserId), "Id", "Name");
+
             return View();
         }
 
@@ -102,7 +161,7 @@ namespace ContactPro.Controllers
                 await _context.SaveChangesAsync();
 
                 //Loop over all selected categories
-                foreach(int categoryId in CategoryList)
+                foreach (int categoryId in CategoryList)
                 {
                     await _addressBookService.AddContactToCategoryAsync(categoryId, contact.Id);
                 }
@@ -111,7 +170,7 @@ namespace ContactPro.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            return RedirectToAction(nameof(Index)); 
+            return RedirectToAction(nameof(Index));
         }
 
         // GET: Contacts/Edit/5
@@ -202,14 +261,14 @@ namespace ContactPro.Controllers
             {
                 _context.Contacts.Remove(contact);
             }
-            
+
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
         private bool ContactExists(int id)
         {
-          return (_context.Contacts?.Any(e => e.Id == id)).GetValueOrDefault();
+            return (_context.Contacts?.Any(e => e.Id == id)).GetValueOrDefault();
         }
     }
 }
