@@ -1,0 +1,42 @@
+﻿@model ContactPro.Models.CustomError
+
+
+<div class="d-flex flex-column justify-content-center">
+    <div class="row row-cols-1">
+		<div class="row">
+			<div class="col-sm-12 ">
+				<div class="col-sm-10 col-sm-offset-1  text-center">
+					<div class="four_zero_four_bg">
+						<h1 class="text-center ">
+                            @Model.code
+                        </h1>
+					</div>
+
+					<div class="contant_box_404">
+						<h3 class="h2">
+							Look like you're lost
+						</h3>
+
+                        <p> @Model.message</p>
+
+                        <a asp-action="Index" asp-controller="Home" class="btn btn-primary btn-lg rounded-pill">Go to Home</a>
+					</div>
+				</div>
+			</div>
+		</div>
+       @* <div class="col text-center">
+            <img src="~/img/oops.png" alt="Page not found" class="img-fluid" />
+        </div>
+        <div class="col text-center display-5 my-3 fw-bold four_zero_four_bg">
+            @Model.code
+        </div>
+        <div class="col text-center h4">
+            @Model.message
+        </div>
+        <div class="col text-center mt-3">
+            <a asp-action="Index" asp-controller="Home" class="btn btn-primary btn-lg rounded-pill">
+                Go To Homepage
+            </a>
+        </div>*@
+    </div>
+</div>
